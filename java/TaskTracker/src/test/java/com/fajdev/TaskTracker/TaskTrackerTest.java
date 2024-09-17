@@ -1,13 +1,13 @@
-package com.fajdev.TasskTracker;
+package com.fajdev.TaskTracker;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit test for simple App.
+ * Unit test for simple TaskTracker.
  */
-public class AppTest {
+public class TaskTrackerTest {
 
     /**
      * Rigorous Test :-)
