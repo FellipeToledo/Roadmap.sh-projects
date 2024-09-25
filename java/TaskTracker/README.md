@@ -64,6 +64,7 @@ This project uses the following open source packages:
 - [Java.nio](https://docs.oracle.com/javase/8/docs/api/java/nio/package-summary.html)
 - [Java.util](https://docs.oracle.com/javase/8/docs/api/java/util/package-summary.html)
 - [Java.time](https://docs.oracle.com/javase/8/docs/api/java/time/LocalDateTime.html)
+- [Slf4j](https://www.slf4j.org/apidocs/org/slf4j/Logger.html)
 
 
 ## Related
