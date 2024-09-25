@@ -1,7 +1,11 @@
 package com.fajdev.TaskTracker;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -9,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 import java.time.LocalDateTime;
 
@@ -17,6 +22,7 @@ import java.time.LocalDateTime;
  * and list tasks which are stored in a JSON file.
  */
 public class TaskTracker {
+    private static final Logger logger = LoggerFactory.getLogger(TaskTracker.class);
     private static final String TASKS_FILE = "tasks.json";
     private static final LocalDateTime now = LocalDateTime.now();
 
@@ -153,14 +159,14 @@ public class TaskTracker {
             File file = new File(TASKS_FILE);
             Path path = Paths.get(TASKS_FILE);
             if (!file.exists()) {
-                file.createNewFile();
-                Files.write(path, "[]".getBytes());
+                Files.write(path, "[]".getBytes(), StandardOpenOption.CREATE);
             }
-
             String content = new String(Files.readAllBytes(path));
             tasks = new JSONArray(content);
-        } catch (Exception e) {
-            System.out.println("Error loading tasks: " + e.getMessage());
+        } catch (IOException e) {
+            logger.error("Error reading/writing tasks file: {}", e.getMessage());
+        } catch (JSONException e) {
+            logger.error("Error parsing JSON content: {}", e.getMessage());
         }
         return tasks;
     }
