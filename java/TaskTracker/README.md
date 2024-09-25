@@ -8,7 +8,7 @@
 <h4 align="center">Simple Command Line Interface (CLI) <br> To track what you need to do.</h4>
 
 <p align="center">
-  <a href="#key-features">Key Features</a> •
+  <a href="#Key-features">Key Features</a> •
   <a href="#how-to-use">How To Use</a> •
   <a href="#credits">Credits</a> •
   <a href="#related">Related</a> •
@@ -63,6 +63,7 @@ This project uses the following open source packages:
 - [Java.io](https://docs.oracle.com/javase/8/docs/api/java/io/package-summary.html)
 - [Java.nio](https://docs.oracle.com/javase/8/docs/api/java/nio/package-summary.html)
 - [Java.util](https://docs.oracle.com/javase/8/docs/api/java/util/package-summary.html)
+- [Java.time](https://docs.oracle.com/javase/8/docs/api/java/time/LocalDateTime.html)
 
 
 ## Related
@@ -86,5 +87,3 @@ MIT
  ![screenshot](https://raw.githubusercontent.com/FellipeToledo/files/refs/heads/main/github-desktop.svg) [@FellipeToledo](https://github.com/FellipeToledo) &nbsp;&middot;&nbsp;   ![screenshot](https://raw.githubusercontent.com/FellipeToledo/files/refs/heads/main/linkedin-outlined.svg) [@FellipeToledo](https://www.linkedin.com/in/fellipetoledo/) &nbsp;&middot;&nbsp;  
 
 </div>
-
-https://roadmap.sh/projects/task-tracker

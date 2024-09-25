@@ -10,12 +10,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
+import java.time.LocalDateTime;
 
 /**
- * Hello world!
+ * The TaskTracker class provides a command-line tool for managing tasks. It allows users to add, update, delete,
+ * and list tasks which are stored in a JSON file.
  */
 public class TaskTracker {
     private static final String TASKS_FILE = "tasks.json";
+    private static final LocalDateTime now = LocalDateTime.now();
 
     public static void main(String[] args) {
         if (args.length < 1) {
@@ -70,6 +73,8 @@ public class TaskTracker {
         newTask.put("id", UUID.randomUUID().toString());
         newTask.put("name", taskName);
         newTask.put("status", "not done");
+        newTask.put("createdAt", now.toString());
+        newTask.put("updatedAt", now.toString());
 
         tasks.put(newTask);
         saveTasks(tasks);
@@ -85,6 +90,7 @@ public class TaskTracker {
             JSONObject task = tasks.getJSONObject(i);
             if (task.getString("id").equals(taskId)) {
                 task.put("status", newStatus);
+                task.put("updatedAt", now.toString());
                 updated = true;
                 break;
             }
@@ -120,7 +126,7 @@ public class TaskTracker {
         }
     }
 
-    // Lists tasks by status
+    // Lists tasks
     private static void listTasks(String filter) {
         JSONArray tasks = loadTasks();
 
@@ -130,7 +136,12 @@ public class TaskTracker {
             String status = task.getString("status");
 
             if (filter.equals("all") || status.equals(filter)) {
-                System.out.println(task.getString("id") + ": " + task.getString("name") + " [" + status + "]");
+                System.out.println("Task ID: " + task.getString("id"));
+                System.out.println("Name: " + task.getString("name"));
+                System.out.println("Status: " + status);
+                System.out.println("Created At: " + task.getString("createdAt"));
+                System.out.println("Updated At: " + task.getString("updatedAt"));
+                System.out.println("----------");
             }
         }
     }
