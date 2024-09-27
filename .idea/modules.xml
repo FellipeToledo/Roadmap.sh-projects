@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/Roadmap.sh-projects.iml" filepath="$PROJECT_DIR$/.idea/Roadmap.sh-projects.iml" />
-      <module fileurl="file://$PROJECT_DIR$/java/TaskTracker/TaskTracker.iml" filepath="$PROJECT_DIR$/java/TaskTracker/TaskTracker.iml" />
     </modules>
   </component>
 </project>
