@@ -9,5 +9,8 @@
         <module name="TaskTracker" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="GitHubUserActivity" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
