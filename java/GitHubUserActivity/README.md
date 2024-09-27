@@ -55,7 +55,7 @@ This project uses the following open source packages:
 
 ## Related
 
-[Roadmap.sh - TT](https://roadmap.sh/projects/task-tracker) &nbsp;&middot;&nbsp;
+[Roadmap.sh - GHUA](https://roadmap.sh/projects/github-user-activity) &nbsp;&middot;&nbsp;
 
 ## You may also like...
 
