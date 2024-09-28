@@ -11,11 +11,11 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * ExpenseTracker is a command-line application used to track and manage expenses.
- * It supports adding new expenses and displaying a summary of all recorded expenses.
- * The expenses are persisted in a JSON file.
- */
+
+ //ExpenseTracker is a command-line application used to track and manage expenses.
+ //It supports adding new expenses and displaying a summary of all recorded expenses.
+ //The expenses are persisted in a JSON file.
+
 public class ExpenseTracker
 {
 
