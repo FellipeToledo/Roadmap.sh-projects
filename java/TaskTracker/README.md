@@ -73,7 +73,8 @@ This project uses the following open source packages:
 
 ## You may also like...
 
-- [TODO](TODO) - A ...TODO
+- [Roadmap.sh - GHUA](https://roadmap.sh/projects/github-user-activity) &nbsp;&middot;&nbsp; A simple command line interface (CLI) to fetch the recent activity of a GitHub user and display it in the terminal.
+- [Roadmap.sh - ET](https://roadmap.sh/projects/expense-tracker) &nbsp;&middot;&nbsp; A simple expense tracker application to manage your finances.
 
 ## License
 

@@ -61,6 +61,7 @@ This project uses the following open source packages:
 
 - [Roadmap.sh - TT](https://roadmap.sh/projects/task-tracker) &nbsp;&middot;&nbsp; - A Simple Command Line Interface (CLI)
   To track what you need to do.
+- [Roadmap.sh - ET](https://roadmap.sh/projects/expense-tracker) &nbsp;&middot;&nbsp; A simple expense tracker application to manage your finances.
 
 ## License
 
