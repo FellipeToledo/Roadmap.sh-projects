@@ -4,17 +4,23 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.*;
 import java.lang.reflect.Type;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
-
- // ExpenseTracker is a command-line application used to track and manage expenses.
- // It supports adding new expenses and displaying a summary of all recorded expenses.
- // The expenses are persisted in a JSON file.
+/**
+ * The ExpenseTracker class manages a list of expenses, allowing users to add, update,
+ * delete, and display expenses. The class also provides functionality to save and load
+ * expenses from a JSON file and display summaries of expenses.
+ */
 public class ExpenseTracker
 {
     /**
@@ -34,13 +40,16 @@ public class ExpenseTracker
     List<String> addExpense = new ArrayList<>();
 
     /**
-     * Update an existing expense.
-     * Usage: --update id amount description
+     * A list containing parameters for updating an existing expense.
+     * Command-line arguments expected for this option are:
+     * - id: The unique identifier of the expense to be updated (parsable as an integer)
+     * - amount: The new amount for the expense (parsable as a double)
+     * - description: The new description for the expense
      *
-     * This field is a list of strings that should contain three elements:
-     * - id: A string representing the id of the expense to update (must be parsable into an integer).
-     * - amount: A string representing the new amount (must be parsable into a double).
-     * - description: A string representing the new description of the expense.
+     * Example usage: --update id amount description
+     *
+     * This field is used in conjunction with other command-line arguments to
+     * perform updates on the expenses list within the ExpenseTracker application.
      */
     @Parameter(names = {"--update", "-u"}, description = "Update an existing expense. Usage: --update id amount description", arity = 3)
     List<String> updateExpense = new ArrayList<>();
@@ -83,6 +92,14 @@ public class ExpenseTracker
     boolean listAll = false;
 
     /**
+     * A command-line parameter that specifies the month for which to show a summary
+     * of expenses. Valid values are integers from 1 to 12, representing January to
+     * December.
+     */
+    @Parameter(names = {"--month-summary", "-m"}, description = "Show summary of expenses for a specific month (1-12)")
+    Integer monthSummary = null;
+
+    /**
      * This boolean flag indicates whether help information should be displayed.
      * It can be triggered via the command line arguments "--help" or "-h".
      */
@@ -97,27 +114,34 @@ public class ExpenseTracker
      */
     private static final String EXPENSE_FILE = "expenses.json";
     /**
-     * A list of recorded expenses.
-     * Each expense is represented by an instance of the {@link Expense} class.
-     * This list is used to add new expenses, load expenses from a file, and save expenses to a file.
+     * A list that holds all the expenses recorded in the ExpenseTracker application.
+     *
+     * This list is used by various methods in the ExpenseTracker class to manage
+     * expenses such as adding, updating, deleting, listing, and summarizing them.
+     * The list is instantiated as an ArrayList and is final, meaning it cannot be reassigned.
      */
     private final List<Expense> expenses = new ArrayList<>();
 
     /**
-     * An instance of Gson used for serializing and deserializing Expense objects.
-     * It helps convert Expense objects to JSON format and vice versa.
-     * This variable is utilized in methods dealing with loading and saving expenses
-     * from and to a JSON file.
+     * An instance of the Gson class, configured with a custom adapter for serializing
+     * and deserializing LocalDate objects.
+     *
+     * This Gson instance is used for converting Expense objects to and from JSON format
+     * within the ExpenseTracker application. The LocalDateAdapter ensures that LocalDate
+     * fields are properly handled during the conversion process.
      */
-    private final Gson gson = new Gson();
+    private final Gson gson = new GsonBuilder()
+            .registerTypeAdapter(LocalDate.class, new LocalDateAdapter())
+            .create();
 
     /**
-     * The entry point of the ExpenseTracker application.
-     * This method parses command-line arguments to perform various actions
-     * such as loading expenses, adding new expenses, saving expenses, and showing expense summary.
+     * Entry point for the ExpenseTracker application. This method initializes the
+     * ExpenseTracker, parses command line arguments using JCommander, and performs
+     * actions based on the provided arguments such as adding, updating, deleting
+     * expenses, and displaying summaries.
      *
-     * @param args Command-line arguments passed to the application
-     *             Possible arguments include flags for adding expenses, showing summary, and displaying help.
+     * @param args Command line arguments to specify different operations like add,
+     *             update, delete expenses, and to show different types of summaries.
      */
     public static void main(String[] args) {
         ExpenseTracker tracker = new ExpenseTracker();
@@ -133,7 +157,7 @@ public class ExpenseTracker
                 return;
             }
 
-            tracker.loadExpenses();  // Load expenses from JSON file
+            tracker.loadExpenses();
 
             if (!tracker.addExpense.isEmpty()) {
                 tracker.addNewExpense();
@@ -155,6 +179,10 @@ public class ExpenseTracker
                 tracker.listAllExpenses();
             }
 
+            if (tracker.monthSummary != null) {
+                tracker.showMonthSummary(tracker.monthSummary);
+            }
+
             tracker.saveExpenses();
 
         } catch (ParameterException e) {
@@ -166,22 +194,20 @@ public class ExpenseTracker
     }
 
     /**
-     * Adds a new expense to the expenses list by parsing the amount and description
-     * from the addExpense list. If the parsing of the amount fails, it catches
-     * a NumberFormatException and prints an error message.
+     * Adds a new expense to the expenses list.
      *
-     * This method expects the addExpense list to contain at least two elements:
-     * - first element: a string representing the amount (which should be parsable into a double)
-     * - second element: a string representing the description of the expense
-     *
-     * It then creates a new Expense object and adds it to the expenses list.
+     * This method processes the first element in the addExpense list as the amount
+     * of the expense and the second element as its description. It creates a new
+     * Expense object and adds it to the expenses list. If the amount cannot be
+     * parsed to a double, it catches a NumberFormatException and prints an error
+     * message.
      *
      * Assumptions:
      * - addExpense is a list containing at least two elements.
-     * - expenses is a list that is already instantiated and available for manipulation.
+     * - expenses is a list that contains Expense objects.
      *
      * Error Handling:
-     * - Prints an error message if the amount is not a valid number.
+     * - Prints an error message if the amount is not in a valid format.
      */
     private void addNewExpense() {
         try {
@@ -196,28 +222,23 @@ public class ExpenseTracker
     }
 
     /**
-     * Updates an existing expense in the expenses list by parsing the ID, amount, and description
-     * from the updateExpense list. If parsing fails, it catches a NumberFormatException and prints
-     * an error message.
+     * Updates an existing expense in the expenses list.
      *
-     * This method expects the updateExpense list to contain at least three elements:
-     * - first element: a string representing the ID (which should be parsable into an integer)
-     * - second element: a string representing the amount (which should be parsable into a double)
-     * - third element: a string representing the description of the expense
-     *
-     * It then finds the corresponding Expense object by its ID and updates its amount and description.
+     * This method retrieves the first element from the updateExpense list as the UUID of the expense,
+     * the second element as the new amount, and the third element as the new description. It finds the
+     * expense by its UUID and updates its amount and description.
      *
      * Assumptions:
-     * - updateExpense is a list containing at least three elements.
-     * - expenses is a list that contains Expense objects.
+     * - The updateExpense list contains at least three elements.
+     * - The expenses list contains Expense objects.
      *
      * Error Handling:
-     * - Prints an error message if the ID or amount is not in a valid format.
-     * - Prints an error message if an expense with the given ID is not found.
+     * - Prints an error message if the UUID or amount is not in a valid format.
+     * - Prints an error message if an expense with the given UUID is not found.
      */
     private void updateExpense() {
         try {
-            int id = Integer.parseInt(updateExpense.get(0));
+            UUID id = UUID.fromString(updateExpense.get(0));
             double amount = Double.parseDouble(updateExpense.get(1));
             String description = updateExpense.get(2);
 
@@ -236,24 +257,24 @@ public class ExpenseTracker
     }
 
     /**
-     * Deletes an expense from the expenses list based on the ID provided in the deleteExpense list.
+     * Deletes an expense from the expenses list.
      *
-     * This method expects the deleteExpense list to contain at least one element:
-     * - first element: a string representing the ID (which should be parsable into an integer)
-     *
-     * It attempts to find the expense with the specified ID and removes it from the list.
+     * This method retrieves and parses the first element from the deleteExpense list
+     * as the UUID of the expense to be deleted. It finds the expense by the UUID, and if found,
+     * removes the expense from the expenses list. If no expense is found with the given UUID,
+     * it prints an error message.
      *
      * Assumptions:
      * - deleteExpense is a list containing at least one element.
      * - expenses is a list that contains Expense objects.
      *
      * Error Handling:
-     * - Prints an error message if the ID is not in a valid format.
-     * - Prints an error message if an expense with the given ID is not found.
+     * - Prints an error message if the UUID is not in a valid format.
+     * - Prints an error message if an expense with the given UUID is not found.
      */
     private void deleteExpense() {
         try {
-            int id = Integer.parseInt(deleteExpense.get(0));
+            UUID id = UUID.fromString(updateExpense.get(0));
             Expense expenseToRemove = findExpenseById(id);
             if (expenseToRemove == null) {
                 System.err.println("Expense with ID " + id + " not found.");
@@ -267,12 +288,15 @@ public class ExpenseTracker
     }
 
     /**
-     * Finds and returns an expense by its ID.
+     * Finds an expense by its unique identifier.
      *
-     * @param id The ID of the expense to be found.
-     * @return The Expense object if found; otherwise, null.
+     * This method searches through the list of expenses and returns the expense
+     * that matches the provided UUID. If no match is found, it returns null.
+     *
+     * @param id The UUID of the expense to be found.
+     * @return The expense with the matching UUID, or null if no match is found.
      */
-    private Expense findExpenseById(int id) {
+    private Expense findExpenseById(UUID id) {
         return expenses.stream().filter(expense -> expense.getId() == id).findFirst().orElse(null);
     }
 
@@ -320,6 +344,35 @@ public class ExpenseTracker
             total += expense.getAmount();
         }
         System.out.println("Total: " + total);
+    }
+
+    /**
+     * Displays a summary of expenses for the specified month.
+     *
+     * The method filters the list of recorded expenses to find those that belong to the
+     * specified month and then prints each expense along with the total amount spent
+     * for that month.
+     *
+     * @param month The month for which the summary is to be displayed. The month is
+     *              represented as an integer where 1 corresponds to January and 12
+     *              corresponds to December.
+     */
+    private void showMonthSummary(int month) {
+        Month specifiedMonth = Month.of(month);
+        List<Expense> monthlyExpenses = expenses.stream()
+                .filter(expense -> expense.getDate().getMonth() == specifiedMonth)
+                .collect(Collectors.toList());
+
+        if (monthlyExpenses.isEmpty()) {
+            System.out.println("No recorded expenses for month: " + specifiedMonth);
+        } else {
+            double totalAmount = monthlyExpenses.stream().mapToDouble(Expense::getAmount).sum();
+            System.out.printf("Expense Summary for %s:%n", specifiedMonth);
+            for (Expense expense : monthlyExpenses) {
+                System.out.println(expense);
+            }
+            System.out.printf("Total Expenses for %s: %.2f%n", specifiedMonth, totalAmount);
+        }
     }
 
     /**

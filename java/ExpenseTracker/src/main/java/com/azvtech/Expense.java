@@ -1,19 +1,22 @@
 package com.azvtech;
 
-public class Expense {
-    private static int idCounter = 1;
+import java.time.LocalDate;
+import java.util.UUID;
 
-    private final int id;
+public class Expense {
+    private final UUID id;
     private double amount;
     private String description;
+    private LocalDate date;
 
     public Expense(double amount, String description) {
-        this.id = idCounter++;
+        this.id = UUID.randomUUID();
         this.amount = amount;
         this.description = description;
+        this.date = LocalDate.now();
     }
 
-    public int getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -33,8 +36,16 @@ public class Expense {
         this.description = description;
     }
 
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
     @Override
     public String toString() {
-        return "Expense{id=" + id + ", amount=" + amount + ", description='" + description + "'}";
+        return "Expense{id=" + id + ", amount=" + amount + ", description='" + description + "', date=" + date + "}";
     }
 }
