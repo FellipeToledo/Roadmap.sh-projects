@@ -1,8 +1,8 @@
 package com.azvtech;
 
 public class Expense {
-    private final double amount;
-    private final String description;
+    private double amount;
+    private String description;
 
     public Expense(double amount, String description) {
         this.amount = amount;
@@ -13,12 +13,24 @@ public class Expense {
         return amount;
     }
 
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
+
     public String getDescription() {
         return description;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public String toString() {
-        return amount + " - " + description;
+        return "Expense{" +
+                "amount=" + amount +
+                ", description='" + description + '\'' +
+                '}';
     }
 }
