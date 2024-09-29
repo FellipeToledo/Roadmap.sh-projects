@@ -19,8 +19,10 @@
 
 ## Key Features
 
-* Add an expense with a description and amount.
-* View a summary of all expenses.
+* Add, list, update and delete expense.
+* Show a summary of all expenses.
+* Show a summary of expenses for a specific month (of current year).
+* Expense categories and allow users to filter expenses by category.
 
 ## How To Use
 
@@ -36,23 +38,31 @@ $ cd java/ExpenseTracker
 # Install dependencies
 $ mvn clean package
 
+# Display help
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -h
+
 # Add an expense with a amount and description 
-$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --a 150 "Game"
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -a <amount> <description> <category>
 
 # Update an expense by id 
-$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --u <id> <amount> <description>
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -u <id> <amount> <description> <category>
 
 # Delete an expense by id 
-$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --d <id>
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -d <id>
 
 # Show a summary of all expenses
-$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --s
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -s
 
 # Show all expenses
-$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --l
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -l
 
 # Show an expense summary for a specific month
-$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --m <specific month (1-12)>
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -m <specific month (1-12)>
+
+# Filter expenses by category
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -c <category>
+
+
 ```
 
 ## Credits
@@ -61,6 +71,7 @@ This project uses the following open source packages:
 
 - [JCommander](https://jcommander.org/)
 - [Gson](https://github.com/google/gson/)
+- [Date](https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/time/package-summary.html/)
 
 ## Related
 
