@@ -36,7 +36,7 @@ public class ExpenseTracker
      *  --add 12.50 "Lunch at Restaurant"
      *  -a 18.75 "Office Supplies"
      */
-    @Parameter(names = {"--add", "-a"}, description = "Add a new expense. Usage: --add amount description", arity = 2)
+    @Parameter(names = {"--add", "-a"}, description = "Add a new expense. Usage: --add amount description category", arity = 3)
     List<String> addExpense = new ArrayList<>();
 
     /**
@@ -51,7 +51,7 @@ public class ExpenseTracker
      * This field is used in conjunction with other command-line arguments to
      * perform updates on the expenses list within the ExpenseTracker application.
      */
-    @Parameter(names = {"--update", "-u"}, description = "Update an existing expense. Usage: --update id amount description", arity = 3)
+    @Parameter(names = {"--update", "-u"}, description = "Update an existing expense. Usage: --update id amount description category", arity = 4)
     List<String> updateExpense = new ArrayList<>();
 
     /**
@@ -100,6 +100,18 @@ public class ExpenseTracker
     Integer monthSummary = null;
 
     /**
+     * Filter expenses by category.
+     *
+     * This parameter allows the user to specify a category by which to filter
+     * the listed expenses. When provided, the application will only display
+     * expenses that match the given category.
+     *
+     * Usage: --category-filter category
+     */
+    @Parameter(names = {"--category-filter", "-c"}, description = "Filter expenses by category. Usage: --category-filter category")
+    String categoryFilter;
+
+    /**
      * This boolean flag indicates whether help information should be displayed.
      * It can be triggered via the command line arguments "--help" or "-h".
      */
@@ -135,13 +147,12 @@ public class ExpenseTracker
             .create();
 
     /**
-     * Entry point for the ExpenseTracker application. This method initializes the
-     * ExpenseTracker, parses command line arguments using JCommander, and performs
-     * actions based on the provided arguments such as adding, updating, deleting
-     * expenses, and displaying summaries.
+     * The entry point of the application which processes command line arguments
+     * to manage the expense tracker.
      *
-     * @param args Command line arguments to specify different operations like add,
-     *             update, delete expenses, and to show different types of summaries.
+     * @param args Command line arguments passed to the application.
+     *             Supported arguments include adding, updating, deleting,
+     *             and listing expenses, displaying summaries, and applying filters.
      */
     public static void main(String[] args) {
         ExpenseTracker tracker = new ExpenseTracker();
@@ -183,6 +194,11 @@ public class ExpenseTracker
                 tracker.showMonthSummary(tracker.monthSummary);
             }
 
+            if (tracker.categoryFilter != null)
+            {
+                tracker.filterExpensesByCategory();
+            }
+
             tracker.saveExpenses();
 
         } catch (ParameterException e) {
@@ -194,28 +210,39 @@ public class ExpenseTracker
     }
 
     /**
-     * Adds a new expense to the expenses list.
+     * Adds a new expense to the expense list.
      *
-     * This method processes the first element in the addExpense list as the amount
-     * of the expense and the second element as its description. It creates a new
-     * Expense object and adds it to the expenses list. If the amount cannot be
-     * parsed to a double, it catches a NumberFormatException and prints an error
-     * message.
+     * This method retrieves the first element from the addExpense list as the amount,
+     * the second element as the description, and the third element as the category.
+     * It parses and validates the amount, checks for a valid category, and creates a new
+     * Expense object which is then added to the expenses list.
      *
      * Assumptions:
-     * - addExpense is a list containing at least two elements.
-     * - expenses is a list that contains Expense objects.
+     * - The addExpense list contains at least three elements.
+     * - The expenses list contains Expense objects.
+     * - The valid categories are defined in the ExpenseCategory enum.
      *
      * Error Handling:
-     * - Prints an error message if the amount is not in a valid format.
+     * - Parses the amount from the first element of addExpense and handles NumberFormatException if the format is invalid.
+     * - Parses the category from the third element of addExpense and handles IllegalArgumentException if the category is invalid by defaulting to ExpenseCategory.OTHER.
+     *
+     * This method prints appropriate messages to the console to indicate the success or failure of adding the new expense.
      */
     private void addNewExpense() {
         try {
             double amount = Double.parseDouble(addExpense.get(0));
             String description = addExpense.get(1);
-            Expense expense = new Expense(amount, description);
+            ExpenseCategory category;
+
+            try {
+                category = ExpenseCategory.valueOf(addExpense.get(2).toUpperCase());
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid category specified. Defaulting to OTHER.");
+                category = ExpenseCategory.OTHER;
+            }
+            Expense expense = new Expense(amount, description, category);
             expenses.add(expense);
-            System.out.println("Added expense: " + expense);
+            System.out.println("Added " + expense);
         } catch (NumberFormatException e) {
             System.err.println("Invalid amount format for expense: " + addExpense.get(0));
         }
@@ -224,24 +251,24 @@ public class ExpenseTracker
     /**
      * Updates an existing expense in the expenses list.
      *
-     * This method retrieves the first element from the updateExpense list as the UUID of the expense,
-     * the second element as the new amount, and the third element as the new description. It finds the
-     * expense by its UUID and updates its amount and description.
+     * This method fetches the expense details from the `updateExpense` field, parses the values,
+     * and updates the corresponding expense if found.
      *
      * Assumptions:
-     * - The updateExpense list contains at least three elements.
-     * - The expenses list contains Expense objects.
+     * - The `updateExpense` list contains at least four elements.
+     * - The `expenses` list contains `Expense` objects.
+     * - Valid categories are defined in the `ExpenseCategory` enum.
      *
      * Error Handling:
-     * - Prints an error message if the UUID or amount is not in a valid format.
-     * - Prints an error message if an expense with the given UUID is not found.
+     * - Prints error messages if the UUID or amount is in an invalid format.
+     * - Prints a message if no expense is found with the specified UUID.
      */
     private void updateExpense() {
         try {
             UUID id = UUID.fromString(updateExpense.get(0));
             double amount = Double.parseDouble(updateExpense.get(1));
             String description = updateExpense.get(2);
-
+            ExpenseCategory category = ExpenseCategory.valueOf(updateExpense.get(3).toUpperCase());
             Expense expenseToUpdate = findExpenseById(id);
             if (expenseToUpdate == null) {
                 System.err.println("Expense with ID " + id + " not found.");
@@ -250,62 +277,78 @@ public class ExpenseTracker
 
             expenseToUpdate.setAmount(amount);
             expenseToUpdate.setDescription(description);
-            System.out.println("Updated expense: " + expenseToUpdate);
+            expenseToUpdate.setCategory(category);
+            System.out.println("Updated  " + expenseToUpdate);
         } catch (NumberFormatException e) {
-            System.err.println("Invalid format: id=" + updateExpense.get(0) + ", amount=" + updateExpense.get(1));
+            System.err.println("Invalid format: \n " +
+                    "id=" + updateExpense.get(0) + " \n" +
+                    "amount=" + updateExpense.get(1) + " \n" +
+                    "description=" + updateExpense.get(2) + " \n" +
+                    "category=" + updateExpense.get(3));
         }
     }
 
     /**
-     * Deletes an expense from the expenses list.
+     * Deletes an expense from the list of expenses.
      *
-     * This method retrieves and parses the first element from the deleteExpense list
-     * as the UUID of the expense to be deleted. It finds the expense by the UUID, and if found,
-     * removes the expense from the expenses list. If no expense is found with the given UUID,
-     * it prints an error message.
+     * This method retrieves the expense ID from the `deleteExpense` list, converts it to a UUID,
+     * and attempts to find the corresponding expense. If the expense is found, it removes it from the list.
+     * The method handles various error scenarios, including an empty `deleteExpense` list, an invalid UUID format,
+     * and other exceptions that might occur during the process.
      *
      * Assumptions:
-     * - deleteExpense is a list containing at least one element.
-     * - expenses is a list that contains Expense objects.
+     * - The `deleteExpense` list contains at least one element, which is the ID of the expense to be deleted.
+     * - The `expenses` list contains `Expense` objects.
      *
      * Error Handling:
-     * - Prints an error message if the UUID is not in a valid format.
-     * - Prints an error message if an expense with the given UUID is not found.
+     * - Prints an error message if the `deleteExpense` list is empty.
+     * - Prints an error message if the UUID format is invalid.
+     * - Prints an error message if the expense with the specified UUID is not found.
+     * - Prints a general error message if any other exception occurs during the deletion process.
      */
     private void deleteExpense() {
+        if (deleteExpense.isEmpty()) {
+            System.err.println("No expense ID provided.");
+            return;
+        }
+
         try {
-            UUID id = UUID.fromString(updateExpense.get(0));
+            UUID id = UUID.fromString(deleteExpense.get(0));
             Expense expenseToRemove = findExpenseById(id);
             if (expenseToRemove == null) {
                 System.err.println("Expense with ID " + id + " not found.");
                 return;
             }
             expenses.remove(expenseToRemove);
-            System.out.println("Deleted expense: " + expenseToRemove);
-        } catch (NumberFormatException e) {
+            System.out.println("Deleted " + expenseToRemove);
+        } catch (IllegalArgumentException e) {
             System.err.println("Invalid format for id: " + deleteExpense.get(0));
+        } catch (Exception e) {
+            System.err.println("An error occurred: " + e.getMessage());
         }
     }
 
     /**
-     * Finds an expense by its unique identifier.
+     * Finds an expense in the list of expenses by its unique identifier.
      *
-     * This method searches through the list of expenses and returns the expense
-     * that matches the provided UUID. If no match is found, it returns null.
-     *
-     * @param id The UUID of the expense to be found.
-     * @return The expense with the matching UUID, or null if no match is found.
+     * @param id The unique identifier (UUID) of the expense to find.
+     * @return The Expense object if found; otherwise, returns null.
      */
     private Expense findExpenseById(UUID id) {
-        return expenses.stream().filter(expense -> expense.getId() == id).findFirst().orElse(null);
+        for (Expense expense : expenses) {
+            if (expense.getId().equals(id)) {
+                return expense;
+            }
+        }
+        return null;
     }
 
     /**
-     * Lists all the recorded expenses.
+     * Lists all recorded expenses.
      *
      * This method checks if there are any expenses recorded. If no expenses are found,
-     * it prints a message indicating that no expenses have been recorded.
-     * Otherwise, it iterates through the list of expenses and prints each expense.
+     * it prints a message indicating that no expenses have been recorded. Otherwise,
+     * it iterates through the list of expenses and prints each expense.
      *
      * Error Handling:
      * - Prints "No recorded expenses." if the expenses list is empty.
@@ -373,6 +416,34 @@ public class ExpenseTracker
             }
             System.out.printf("Total Expenses for %s: %.2f%n", specifiedMonth, totalAmount);
         }
+    }
+
+    /**
+     * Filters the list of expenses based on the specified category and prints the filtered expenses.
+     *
+     * This method attempts to parse the specified category filter from the `categoryFilter` field.
+     * If the category is valid, it filters the expenses list to include only those expenses
+     * that match the specified category. The filtered expenses are then printed to the console.
+     *
+     * Error Handling:
+     * - If the category specified in `categoryFilter` is invalid, an error message is
+     *   printed to the standard error stream, and no expenses are filtered.
+     */
+    private void filterExpensesByCategory()
+    {
+        ExpenseCategory category;
+        try {
+            category = ExpenseCategory.valueOf(categoryFilter.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid category specified. No expenses filtered.");
+            return;
+        }
+
+        List<Expense> filteredExpenses = expenses.stream()
+                .filter(expense -> expense.getCategory() == category)
+                .collect(Collectors.toList());
+        System.out.println("Filtered expenses by category '" + category + "':");
+        filteredExpenses.forEach(System.out::println);
     }
 
     /**

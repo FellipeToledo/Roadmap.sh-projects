@@ -8,12 +8,14 @@ public class Expense {
     private double amount;
     private String description;
     private LocalDate date;
+    private ExpenseCategory category;
 
-    public Expense(double amount, String description) {
+    public Expense(double amount, String description, ExpenseCategory category) {
         this.id = UUID.randomUUID();
         this.amount = amount;
         this.description = description;
         this.date = LocalDate.now();
+        this.category = category;
     }
 
     public UUID getId() {
@@ -44,8 +46,21 @@ public class Expense {
         this.date = date;
     }
 
+    public ExpenseCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(ExpenseCategory category) {
+        this.category = category;
+    }
+
     @Override
     public String toString() {
-        return "Expense{id=" + id + ", amount=" + amount + ", description='" + description + "', date=" + date + "}";
+        return "Expense: #" + id + " \n " +
+                "amount = " + amount + " \n " +
+                "description = " + description + " \n" +
+                " date = " + date + " \n " +
+                "category = " + category + " \n" +
+                "_____________________________";
     }
 }
