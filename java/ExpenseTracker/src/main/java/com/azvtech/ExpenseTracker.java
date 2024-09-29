@@ -18,7 +18,6 @@ import java.util.List;
 
 public class ExpenseTracker
 {
-
     /**
      * A list of strings used to add a new expense. The first element should be the amount (a double) and
      * the second element should be the description of the expense. Typically used with command-line
@@ -34,6 +33,9 @@ public class ExpenseTracker
      */
     @Parameter(names = {"--add", "-a"}, description = "Add a new expense. Usage: --add amount description", arity = 2)
     List<String> addExpense = new ArrayList<>();
+
+    @Parameter(names = {"--update", "-u"}, description = "Update an existing expense. Usage: --update index amount description", arity = 3)
+    List<String> updateExpense = new ArrayList<>();
 
     /**
      * Flag to indicate whether to show the summary of expenses in the ExpenseTracker.
@@ -82,13 +84,15 @@ public class ExpenseTracker
      */
     public static void main(String[] args) {
         ExpenseTracker tracker = new ExpenseTracker();
-        JCommander jc = JCommander.newBuilder().addObject(tracker).build();
+        JCommander commander = JCommander.newBuilder()
+                .addObject(tracker)
+                .build();
 
         try {
-            jc.parse(args);
+            commander.parse(args);
 
             if (tracker.help) {
-                jc.usage();
+                commander.usage();
                 return;
             }
 
@@ -96,16 +100,21 @@ public class ExpenseTracker
 
             if (!tracker.addExpense.isEmpty()) {
                 tracker.addNewExpense();
-                tracker.saveExpenses();  // Save expenses after adding new ones
+            }
+
+            if (!tracker.updateExpense.isEmpty()) {
+                tracker.updateExpense();
             }
 
             if (tracker.showSummary) {
                 tracker.showExpenseSummary();
             }
 
-        } catch (ParameterException ex) {
-            System.out.println(ex.getMessage());
-            jc.usage();
+            tracker.saveExpenses();
+
+        } catch (ParameterException e) {
+            System.err.println(e.getMessage());
+            commander.usage();
         } catch (IOException e) {
             System.out.println("Error reading or writing to file: " + e.getMessage());
         }
@@ -133,10 +142,31 @@ public class ExpenseTracker
         try {
             double amount = Double.parseDouble(addExpense.get(0));
             String description = addExpense.get(1);
-            expenses.add(new Expense(amount, description));
-            System.out.println("Expense added: " + amount + " - " + description);
+            Expense expense = new Expense(amount, description);
+            expenses.add(expense);
+            System.out.println("Added expense: " + expense);
         } catch (NumberFormatException e) {
-            System.out.println("Error: Amount should be a number.");
+            System.err.println("Invalid amount format for expense: " + addExpense.get(0));
+        }
+    }
+
+    private void updateExpense() {
+        try {
+            int index = Integer.parseInt(updateExpense.get(0));
+            double amount = Double.parseDouble(updateExpense.get(1));
+            String description = updateExpense.get(2);
+
+            if (index < 0 || index >= expenses.size()) {
+                System.err.println("Invalid index for update: " + index);
+                return;
+            }
+
+            Expense expense = expenses.get(index);
+            expense.setAmount(amount);
+            expense.setDescription(description);
+            System.out.println("Updated expense at index " + index + ": " + expense);
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid format: index=" + updateExpense.get(0) + ", amount=" + updateExpense.get(1));
         }
     }
 
@@ -184,6 +214,7 @@ public class ExpenseTracker
             Type expenseListType = new TypeToken<List<Expense>>() {}.getType();
             List<Expense> loadedExpenses = gson.fromJson(reader, expenseListType);
             if (loadedExpenses != null) {
+                expenses.clear();
                 expenses.addAll(loadedExpenses);
             }
         } catch (IOException e) {
