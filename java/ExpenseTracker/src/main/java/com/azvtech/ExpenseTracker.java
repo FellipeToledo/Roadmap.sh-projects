@@ -70,6 +70,19 @@ public class ExpenseTracker
     boolean showSummary = false;
 
     /**
+     * A command-line parameter that specifies whether to list all recorded expenses.
+     *
+     * This boolean flag is used to determine if the application should display all
+     * recorded expenses when executed. It can be activated using either the
+     * "--all" or "-l" options in the command-line input.
+     *
+     * The flag defaults to {@code false}, meaning that if it is not explicitly
+     * set by the user, the application will not list all recorded expenses.
+     */
+    @Parameter(names = {"--all", "-l"}, description = "List all recorded expenses")
+    boolean listAll = false;
+
+    /**
      * This boolean flag indicates whether help information should be displayed.
      * It can be triggered via the command line arguments "--help" or "-h".
      */
@@ -136,6 +149,10 @@ public class ExpenseTracker
 
             if (tracker.showSummary) {
                 tracker.showExpenseSummary();
+            }
+
+            if (tracker.listAll) {
+                tracker.listAllExpenses();
             }
 
             tracker.saveExpenses();
@@ -260,6 +277,27 @@ public class ExpenseTracker
     }
 
     /**
+     * Lists all the recorded expenses.
+     *
+     * This method checks if there are any expenses recorded. If no expenses are found,
+     * it prints a message indicating that no expenses have been recorded.
+     * Otherwise, it iterates through the list of expenses and prints each expense.
+     *
+     * Error Handling:
+     * - Prints "No recorded expenses." if the expenses list is empty.
+     */
+    private void listAllExpenses() {
+        if (expenses.isEmpty()) {
+            System.out.println("No recorded expenses.");
+        } else {
+            System.out.println("All Recorded Expenses:");
+            for (Expense expense : expenses) {
+                System.out.println(expense);
+            }
+        }
+    }
+
+    /**
      * Displays a summary of all recorded expenses in the expenses list.
      *
      * The method checks if there are any expenses recorded. If no expenses are found,
@@ -279,7 +317,6 @@ public class ExpenseTracker
         double total = 0;
         System.out.println("Expense Summary:");
         for (Expense expense : expenses) {
-            System.out.println(expense);
             total += expense.getAmount();
         }
         System.out.println("Total: " + total);
