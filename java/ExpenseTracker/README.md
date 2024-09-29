@@ -37,16 +37,22 @@ $ cd java/ExpenseTracker
 $ mvn clean package
 
 # Add an expense with a amount and description 
-$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --add 150 "Game"
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --a 150 "Game"
 
 # Update an expense by id 
-$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --update <id> <amount> <description>
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --u <id> <amount> <description>
 
 # Delete an expense by id 
-$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --delete <id>
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --d <id>
 
-# View a summary of all expenses
-$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --summary
+# Show a summary of all expenses
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --s
+
+# Show all expenses
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --l
+
+# Show an expense summary for a specific month
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --m <specific month (1-12)>
 ```
 
 ## Credits
