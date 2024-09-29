@@ -39,6 +39,12 @@ $ mvn clean package
 # Add an expense with a amount and description 
 $ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --add 150 "Game"
 
+# Update an expense by id 
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --update <id> <amount> <description>
+
+# Delete an expense by id 
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --delete <id>
+
 # View a summary of all expenses
 $ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar --summary
 ```

@@ -15,7 +15,6 @@ import java.util.List;
  // ExpenseTracker is a command-line application used to track and manage expenses.
  // It supports adding new expenses and displaying a summary of all recorded expenses.
  // The expenses are persisted in a JSON file.
-
 public class ExpenseTracker
 {
     /**
@@ -34,8 +33,33 @@ public class ExpenseTracker
     @Parameter(names = {"--add", "-a"}, description = "Add a new expense. Usage: --add amount description", arity = 2)
     List<String> addExpense = new ArrayList<>();
 
-    @Parameter(names = {"--update", "-u"}, description = "Update an existing expense. Usage: --update index amount description", arity = 3)
+    /**
+     * Update an existing expense.
+     * Usage: --update id amount description
+     *
+     * This field is a list of strings that should contain three elements:
+     * - id: A string representing the id of the expense to update (must be parsable into an integer).
+     * - amount: A string representing the new amount (must be parsable into a double).
+     * - description: A string representing the new description of the expense.
+     */
+    @Parameter(names = {"--update", "-u"}, description = "Update an existing expense. Usage: --update id amount description", arity = 3)
     List<String> updateExpense = new ArrayList<>();
+
+    /**
+     * Stores command-line arguments for deleting an existing expense by its id.
+     *
+     * The list accepts a single argument that represents the id of the expense to be deleted.
+     * This parameter can be specified using "--delete" or "-d" flags.
+     *
+     * The deletion functionality is triggered based on the value provided in this list.
+     *
+     * Expected Usage: --delete [id]
+     *
+     * Error Handling:
+     * - Ensure that exactly one parameter (the id of the expense) is provided.
+     */
+    @Parameter(names = {"--delete", "-d"}, description = "Delete an existing expense by id. Usage: --delete id", arity = 1)
+    List<String> deleteExpense = new ArrayList<>();
 
     /**
      * Flag to indicate whether to show the summary of expenses in the ExpenseTracker.
@@ -106,6 +130,10 @@ public class ExpenseTracker
                 tracker.updateExpense();
             }
 
+            if (!tracker.deleteExpense.isEmpty()) {
+                tracker.deleteExpense();
+            }
+
             if (tracker.showSummary) {
                 tracker.showExpenseSummary();
             }
@@ -150,24 +178,85 @@ public class ExpenseTracker
         }
     }
 
+    /**
+     * Updates an existing expense in the expenses list by parsing the ID, amount, and description
+     * from the updateExpense list. If parsing fails, it catches a NumberFormatException and prints
+     * an error message.
+     *
+     * This method expects the updateExpense list to contain at least three elements:
+     * - first element: a string representing the ID (which should be parsable into an integer)
+     * - second element: a string representing the amount (which should be parsable into a double)
+     * - third element: a string representing the description of the expense
+     *
+     * It then finds the corresponding Expense object by its ID and updates its amount and description.
+     *
+     * Assumptions:
+     * - updateExpense is a list containing at least three elements.
+     * - expenses is a list that contains Expense objects.
+     *
+     * Error Handling:
+     * - Prints an error message if the ID or amount is not in a valid format.
+     * - Prints an error message if an expense with the given ID is not found.
+     */
     private void updateExpense() {
         try {
-            int index = Integer.parseInt(updateExpense.get(0));
+            int id = Integer.parseInt(updateExpense.get(0));
             double amount = Double.parseDouble(updateExpense.get(1));
             String description = updateExpense.get(2);
 
-            if (index < 0 || index >= expenses.size()) {
-                System.err.println("Invalid index for update: " + index);
+            Expense expenseToUpdate = findExpenseById(id);
+            if (expenseToUpdate == null) {
+                System.err.println("Expense with ID " + id + " not found.");
                 return;
             }
 
-            Expense expense = expenses.get(index);
-            expense.setAmount(amount);
-            expense.setDescription(description);
-            System.out.println("Updated expense at index " + index + ": " + expense);
+            expenseToUpdate.setAmount(amount);
+            expenseToUpdate.setDescription(description);
+            System.out.println("Updated expense: " + expenseToUpdate);
         } catch (NumberFormatException e) {
-            System.err.println("Invalid format: index=" + updateExpense.get(0) + ", amount=" + updateExpense.get(1));
+            System.err.println("Invalid format: id=" + updateExpense.get(0) + ", amount=" + updateExpense.get(1));
         }
+    }
+
+    /**
+     * Deletes an expense from the expenses list based on the ID provided in the deleteExpense list.
+     *
+     * This method expects the deleteExpense list to contain at least one element:
+     * - first element: a string representing the ID (which should be parsable into an integer)
+     *
+     * It attempts to find the expense with the specified ID and removes it from the list.
+     *
+     * Assumptions:
+     * - deleteExpense is a list containing at least one element.
+     * - expenses is a list that contains Expense objects.
+     *
+     * Error Handling:
+     * - Prints an error message if the ID is not in a valid format.
+     * - Prints an error message if an expense with the given ID is not found.
+     */
+    private void deleteExpense() {
+        try {
+            int id = Integer.parseInt(deleteExpense.get(0));
+            Expense expenseToRemove = findExpenseById(id);
+            if (expenseToRemove == null) {
+                System.err.println("Expense with ID " + id + " not found.");
+                return;
+            }
+            expenses.remove(expenseToRemove);
+            System.out.println("Deleted expense: " + expenseToRemove);
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid format for id: " + deleteExpense.get(0));
+        }
+    }
+
+    /**
+     * Finds and returns an expense by its ID.
+     *
+     * @param id The ID of the expense to be found.
+     * @return The Expense object if found; otherwise, null.
+     */
+    private Expense findExpenseById(int id) {
+        return expenses.stream().filter(expense -> expense.getId() == id).findFirst().orElse(null);
     }
 
     /**
