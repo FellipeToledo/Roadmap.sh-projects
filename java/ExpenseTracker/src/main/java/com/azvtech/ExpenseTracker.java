@@ -11,9 +11,7 @@ import java.io.*;
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -112,6 +110,29 @@ public class ExpenseTracker
     String categoryFilter;
 
     /**
+     * Command-line parameter for setting a budget for a specific month.
+     *
+     * This variable is used to specify the budget for a given month through the command-line interface.
+     * The user is expected to provide two arguments: the month (as an integer) and the budget amount.
+     *
+     * Example command: --set-budget 5 1000
+     *
+     * Arity: 2
+     *
+     * Format:
+     * - month (int): The month for which the budget is being set (1 for January, 12 for December).
+     * - amount (String): The budget amount in the specified month.
+     *
+     * Used for:
+     * - Managing monthly budgets in an expense tracking application.
+     *
+     * Error Handling:
+     * - The application should handle cases where the input is not in the correct format or the values provided are invalid.
+     */
+    @Parameter(names = {"--set-budget", "-b"}, description = "Set a budget for a specific month. Usage: --set-budget month amount", arity = 2)
+    List<String> setBudget = new ArrayList<>();
+
+    /**
      * This boolean flag indicates whether help information should be displayed.
      * It can be triggered via the command line arguments "--help" or "-h".
      */
@@ -147,12 +168,19 @@ public class ExpenseTracker
             .create();
 
     /**
-     * The entry point of the application which processes command line arguments
-     * to manage the expense tracker.
+     * A mapping of monthly budgets where each key represents a month and the
+     * corresponding value represents the budget allocated for that month.
+     */
+    private Map<Month, Double> monthlyBudgets = new HashMap<>();
+
+    /**
+     * Entry point for the ExpenseTracker application.
      *
-     * @param args Command line arguments passed to the application.
-     *             Supported arguments include adding, updating, deleting,
-     *             and listing expenses, displaying summaries, and applying filters.
+     * This method initializes the ExpenseTracker instance, parses command-line arguments,
+     * and invokes various functionalities like loading, adding, updating, and deleting expenses.
+     * It also handles displaying summaries and setting budgets based on user inputs.
+     *
+     * @param args Command-line arguments passed to the application.
      */
     public static void main(String[] args) {
         ExpenseTracker tracker = new ExpenseTracker();
@@ -198,6 +226,16 @@ public class ExpenseTracker
             {
                 tracker.filterExpensesByCategory();
             }
+
+            if (!tracker.setBudget.isEmpty()) {
+                Month month = Month.valueOf(tracker.setBudget.get(0).toUpperCase());
+                double amount = Double.parseDouble(tracker.setBudget.get(1));
+                tracker.setMonthlyBudget(month, amount);
+                System.out.println("Budget set for " + month + ": $" + amount);
+            }
+
+            // Example of checking the budget for a particular month (e.g., the current month)
+            tracker.checkBudget(LocalDate.now().getMonth());
 
             tracker.saveExpenses();
 
@@ -444,6 +482,47 @@ public class ExpenseTracker
                 .collect(Collectors.toList());
         System.out.println("Filtered expenses by category '" + category + "':");
         filteredExpenses.forEach(System.out::println);
+    }
+
+    /**
+     * Sets the monthly budget for a specified month.
+     *
+     * This method updates the budget for the given month with the specified amount.
+     *
+     * @param month  The month for which the budget is to be set.
+     * @param amount The budget amount to be set for the specified month.
+     */
+    private void setMonthlyBudget(Month month, double amount) {
+        monthlyBudgets.put(month, amount);
+    }
+
+    /**
+     * Computes the total expenses for a specified month.
+     *
+     * @param month The month for which the expenses are to be calculated.
+     * @return The total amount of expenses for the given month.
+     */
+    private double getMonthlyExpenses(Month month) {
+        return expenses.stream()
+                .filter(expense -> expense.getDate().getMonth() == month)
+                .mapToDouble(Expense::getAmount)
+                .sum();
+    }
+
+    /**
+     * Checks if the expenses for the given month exceed the set budget.
+     *
+     * This method calculates the total expenses for the specified month and
+     * compares it with the pre-defined budget for that month. If the expenses
+     * exceed the budget, a warning message is printed.
+     *
+     * @param month The month for which the budget check is performed.
+     */
+    private void checkBudget(Month month) {
+        double expenses = getMonthlyExpenses(month);
+        if (monthlyBudgets.containsKey(month) && expenses > monthlyBudgets.get(month)) {
+            System.out.println("Warning: You have exceeded your budget for " + month);
+        }
     }
 
     /**

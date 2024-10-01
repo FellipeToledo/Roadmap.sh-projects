@@ -62,6 +62,9 @@ $ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -m <spe
 # Filter expenses by category
 $ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -c <category>
 
+# set a budget for a specific month.
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -b <month> <amount>
+
 
 ```
 
