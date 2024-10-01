@@ -133,6 +133,28 @@ public class ExpenseTracker
     List<String> setBudget = new ArrayList<>();
 
     /**
+     * List of filenames for exporting expenses to a CSV file.
+     *
+     * The `exportCsv` field is used to store filenames specified via command-line arguments
+     * for exporting the tracked expenses to CSV files. This can be utilized in the application
+     * to generate CSV outputs of the recorded expenses.
+     *
+     * Command-Line Usage:
+     * - `--export-csv filename`
+     * - `-e filename`
+     *
+     * Each entry in this list represents a file to which the expenses
+     * will be exported when the corresponding command is executed.
+     *
+     * Arguments:
+     * - `--export-csv`, `-e`: Specifies the filename for exporting expenses.
+     *     - Expected input: A single filename (String).
+     *     - Arity: 1 (one filename only).
+     */
+    @Parameter(names = {"--export-csv", "-e"}, description = "Export expenses to a CSV file. Usage: --export-csv filename", arity = 1)
+    List<String> exportCsv = new ArrayList<>();
+
+    /**
      * This boolean flag indicates whether help information should be displayed.
      * It can be triggered via the command line arguments "--help" or "-h".
      */
@@ -232,6 +254,11 @@ public class ExpenseTracker
                 double amount = Double.parseDouble(tracker.setBudget.get(1));
                 tracker.setMonthlyBudget(month, amount);
                 System.out.println("Budget set for " + month + ": $" + amount);
+            }
+
+            if (!tracker.exportCsv.isEmpty()) {
+                String filename = tracker.exportCsv.get(0);
+                tracker.exportExpensesToCsv(filename);
             }
 
             // Example of checking the budget for a particular month (e.g., the current month)
@@ -564,10 +591,42 @@ public class ExpenseTracker
      *
      * @throws IOException If an I/O error occurs while writing to the file.
      */
-    // Save expenses to a JSON file
     private void saveExpenses() throws IOException {
         try (Writer writer = new FileWriter(EXPENSE_FILE)) {
             gson.toJson(expenses, writer);
+        }
+    }
+
+    /**
+     * Exports the list of expenses to a CSV file.
+     *
+     * This method writes the expenses to a specified file in CSV format.
+     * Each record in the file represents an expense with its ID, amount, description, and date
+     * separated by commas.
+     *
+     * @param filename The name of the file to which the expenses should be exported.
+     */
+    private void exportExpensesToCsv(String filename) {
+        try (PrintWriter writer = new PrintWriter(new File(filename))) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("ID,Amount,Description,Date\n");
+
+            for (Expense expense : expenses) {
+                sb.append(expense.getId())
+                        .append(',')
+                        .append(expense.getAmount())
+                        .append(',')
+                        .append(expense.getDescription())
+                        .append(',')
+                        .append(expense.getDate())
+                        .append('\n');
+            }
+
+            writer.write(sb.toString());
+            System.out.println("Expenses have been successfully exported to " + filename);
+
+        } catch (FileNotFoundException e) {
+            System.err.println("Error: Unable to write to the file " + filename);
         }
     }
 }
