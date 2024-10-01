@@ -23,6 +23,8 @@
 * Show a summary of all expenses.
 * Show a summary of expenses for a specific month (of current year).
 * Expense categories and allow users to filter expenses by category.
+* Set a budget for a specific month.
+* Export expenses to a CSV file.
 
 ## How To Use
 
@@ -62,8 +64,11 @@ $ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -m <spe
 # Filter expenses by category
 $ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -c <category>
 
-# set a budget for a specific month.
+# Set a budget for a specific month.
 $ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -b <month> <amount>
+
+# Export expenses to a CSV file.
+$ java -jar target/ExpenseTracker-1.0-SNAPSHOT-jar-with-dependencies.jar -e <fileName>
 
 
 ```
